@@ -11,7 +11,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "station2")
+@Document(collection = "station1")
 public class WeatherData {
     @Id
     private String id;
