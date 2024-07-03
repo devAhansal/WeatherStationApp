@@ -2,6 +2,7 @@ import {Component, OnInit, Renderer2} from '@angular/core';
 import {WeatherDataService} from "../service/weather-data.service";
 import {WeatherData} from "../model/weatherdata.model";
 import {Router} from '@angular/router';
+import {AxiosService} from "../service/axios.service";
 
 
 
@@ -13,25 +14,29 @@ import {Router} from '@angular/router';
 export class DashboardComponent implements OnInit {
 
   public WeatherData: Array<WeatherData> = [];
+  isAuthenticated: boolean = false;
 
 
-  constructor(private WeatherDataService: WeatherDataService, private renderer: Renderer2) {
+  constructor(private WeatherDataService: WeatherDataService, private renderer: Renderer2,private router: Router,private axiosService: AxiosService) {
   }
 
   ngOnInit(): void {
-    this.getWeatherData();
-    this.initDropdownMenu();
+    this.isAuthenticated = this.axiosService.getAuthToken() !== null;
+    if (this.isAuthenticated) {
+      this.getWeatherData();
+      this.initDropdownMenu();
+    }else{
+      this.router.navigate(['/login']);
+    }
   }
 
   getWeatherData(): void {
-    this.WeatherDataService.getWeatherData()
-      .subscribe({
-        next: (resp) => {
-          this.WeatherData = resp.body as WeatherData[];
-        },
-        error: err => {
-          console.log(err)
-        }
+    this.axiosService.getWeatherData()
+      .then((data: WeatherData[]) => {
+        this.WeatherData = data;
+      })
+      .catch(error => {
+        console.error('Error fetching weather data in component:', error);
       });
   }
 
@@ -53,4 +58,8 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  logout(): void {
+    this.axiosService.logout();
+    this.router.navigate(['/login']);
+  }
 }
